@@ -18,8 +18,8 @@ class Agent:
 
         human_prompt = f"Your task is: {task}\n\n"
         human_prompt += "Previous conversation:\n"
-        for message in self.conversation_history[-5:]:  # Include last 5 messages for context
-            human_prompt += f"{message['role']}: {message['content']}\n"
+        # for message in self.conversation_history[-5:]:  # Include last 5 messages for context
+        #     human_prompt += f"{message['role']}: {message['content']}\n"
 
         prompt = f"{anthropic.HUMAN_PROMPT} {system_prompt}\n\n{human_prompt}{anthropic.AI_PROMPT}"
 
