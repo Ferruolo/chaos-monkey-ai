@@ -3,8 +3,7 @@ from src.state_machines import AgentStateMachine
 from src.android_controller import AndroidController
 
 
-prompt = ("Test how gmail behaves when we launch the app on the device without internet connection as well as what "
-          "happens when connection is back online.")
+prompt = ("Open an app called 'my sample application', and test how it works with and without wifi")
 
 app_path = "~/gattaca/sample-app/mysampleapplication/app/build/outputs/apk/release/app-release-unsigned.apk"
 

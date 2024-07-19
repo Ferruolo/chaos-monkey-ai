@@ -22,10 +22,22 @@ taking an XML output of the current screen of an android phone, along with a com
 and returning a command in the following JSON Format:
 {
     command_name: A string containing the commands tap or swipe
-    command_inputs: [int] A list of coordinates for the respective command. If tap command, pass [x, y], else for swipe pass 
+    command_inputs: [int] A list of integer coordinates for the respective command. If tap command, pass [x, y], else for swipe pass 
         [x-start y-start x-end y-end duration]
 }
-Return that command, and only that command, with no additional output
+Return that command, and only that command, with no additional output.
+
+
+Here are some tips for completing tasks:
+ 
+Open an App: To Open an app, swipe down
+from middle of the screen to 3/4 of the way down the screen to open the applications 
+area, then click on the application
+
+Turn off/on wifi: Swipe down on the top of the screen to enter settings area, then click on wifi
+button to toggle wifi availability.
+
+Close App: Swipe up from very bottom of the screen
 """
 
 verifier_node_system_prompt = """
