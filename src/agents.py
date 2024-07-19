@@ -14,6 +14,7 @@ rather than include it in the agent coding. This way we can minimize the amount 
 code written
 """
 
+
 # Basic Claude Agent
 # TODO: Add history for chain-of-thought prompting
 class ClaudeAgent(Agent):
@@ -33,7 +34,6 @@ class ClaudeAgent(Agent):
 
         return AgentOutput(success=True, agent_id=self.agent_id, output=response)
 
-
     def fetch_cmd(self, cmd: str) -> str:
         if cmd == "get-last-command":
             return self.last_command
@@ -42,8 +42,8 @@ class ClaudeAgent(Agent):
 
 
 class AndroidAgent(Agent):
-    def __init__(self, agent_id, android):
-        super().__init__(agent_id)
+    def __init__(self, *args, android: AndroidController):
+        super().__init__(*args)
         self.android: AndroidController = android
 
     def run(self, command):
