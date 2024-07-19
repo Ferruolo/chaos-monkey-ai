@@ -14,92 +14,6 @@ You are an Android Quality Assurance expert tasked with
 searching for errors in an app that would be encountered through
 normal usage. When given an xml output of the current app screen, along with a list 
 of your previous movements and their outcome, you will provide the next, and only the next command
-
-Example Conversation:
-Task: Find an issue with <application> 
-Screen: 
-<
-    XML output of the current Home Screen
->
-History:
-
-
-Assistant: 
-Open Application
-===================
-Task: Find an issue with <application> 
-Screen: 
-<
-    XML output of the camera App
->
-History:
-```
-Find an issue with <application> 
-
-
-Assistant: 
-Open <application>
-```
-Assistant:
-Close Camera App
-===================
-Task: Find an issue with <application> 
-Screen: 
-<
-    XML output of the home screen
->
-History:
-```
-Find an issue with <application> 
-
-
-Assistant: 
-Open Application
-```
-```
-Find an issue with <application> 
-
-
-Assistant: 
-Close Camera App
-```
-
-
-Assistant:
-
-Open <application> 
-===================
-Task: Find an issue with <application> 
-Screen: 
-<
-    XML output <application> landing screen
->
-History:
-```
-Find an issue with <application> 
-
-
-Assistant: 
-Open Application
-```
-```
-Find an issue with <application> 
-
-
-Assistant: 
-Close Camera App
-```
-```
-Find an issue with <application> 
-
-
-Assistant: 
-Open <application>
-```
-
-Assistant:
-
-Click on Menu Button
 """
 
 command_node_system_prompt = """
@@ -108,7 +22,8 @@ taking an XML output of the current screen of an android phone, along with a com
 and returning a command in the following JSON Format:
 {
     command_name: A string containing the commands tap or swipe
-    command_inputs: [int] A list of coordinates for the respective command. If tap command, pass [x, y], else for swipe pass [x-start y-start x-end y-end duration]
+    command_inputs: [int] A list of coordinates for the respective command. If tap command, pass [x, y], else for swipe pass 
+        [x-start y-start x-end y-end duration]
 }
 Return that command, and only that command, with no additional output
 """
@@ -125,6 +40,14 @@ otherwise return
 Do not return any other text, explanation or otherwise
 """
 
+
+def check_output(x: str) -> bool:
+    if type(x) != str:
+        return False
+    else:
+        return "<SUCCESS>" in x
+
+
 startnode = "MasterNode"
 
 # TODO: Fix prompt-formatters
@@ -140,9 +63,12 @@ agent_definitions = {
         'prompt-formatter': lambda x: lambda y: lambda z: f"Task: {x} | Current Screen: {z[0]}",
         'call-before-execute': [
             CallCommand(agent_name="AndroidNode", agent_command="get-screen"),
+            CallCommand(agent_name="CommandParser", agent_command="erase-history"),
         ],
         'pass-success-to': 'CommandParser',
-        'pass-fail-to': 'BREAK'  # Initiates Break as Failure
+        'pass-fail-to': 'BREAK',  # Initiates Break as Failure
+        'use-history': True,
+        'output-success': lambda x : True,
     },
     ## This Module takes in a task from the master node and
     # the current state and determines the next
@@ -155,7 +81,9 @@ agent_definitions = {
             CallCommand(agent_name="AndroidNode", agent_command="get-screen")
         ],
         'pass-success-to': 'AndroidNode',
-        'pass-fail-to': 'BREAK'  # Should Never Fail
+        'pass-fail-to': 'BREAK',  # Should Never Fail
+        'use-history': True,
+        'output-success': lambda x : True,
     },
     ##
     # This Module determines whether the current task has been achieved given
@@ -170,7 +98,9 @@ agent_definitions = {
             CallCommand(agent_name="CommandParser", agent_command="get-last-command")
         ],
         'pass-success-to': 'MasterNode',
-        'pass-fail-to': 'CommandParser'  # If we haven't reached
+        'pass-fail-to': 'CommandParser',  # If we haven't reached
+        'use-history': False,
+        'output-success': check_output,
     },
     ## Android Controller, self-explanatory:
     'AndroidNode': {
@@ -179,5 +109,6 @@ agent_definitions = {
         'call-before-execute': [],
         'pass-success-to': 'VerifierNode',
         'pass-fail-to': 'CommandParser'  # If we haven't reached
+        ''
     }
 }

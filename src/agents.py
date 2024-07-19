@@ -51,26 +51,47 @@ class Agent:
 # Basic Claude Agent
 # TODO: Add history for chain-of-thought prompting
 class ClaudeAgent(Agent):
-    def __init__(self, *args, system_prompt, model="claude-2"):
+    def __init__(self, *args, system_prompt, use_history=False, output_success=lambda x: True, model="claude-2"):
         super().__init__(*args)
         self.system_prompt = system_prompt
         self.client = anthropic.Anthropic(api_key=os.environ["CLAUDE_API_KEY"])
         self.model = model
         self.last_command = ""
-        self.history =
+        self.history = []
+        self.use_history = use_history
+        self.len_recent_history = 5
+        self.output_success = output_success
 
     def run(self, command: str) -> AgentOutput:
         self.last_command = command
-        prompt = f"{self.system_prompt} {anthropic.HUMAN_PROMPT} {command}  {anthropic.AI_PROMPT}"
+
+        history = ""
+
+        if len(self.history) > 0:
+            recent_history = self.history[-self.len_recent_history:] if len(
+                self.history) > self.len_recent_history else self.history
+            history = "History:\n" + '\n'.join(recent_history)
+
+
+        prompt = f"{self.system_prompt}\n{anthropic.HUMAN_PROMPT}\n{command}\n{history}\n{anthropic.AI_PROMPT}"
+        print(prompt)
+
 
         response = self.client.completions.create(model=self.model, prompt=prompt, max_tokens_to_sample=300,
                                                   stop_sequences=[anthropic.HUMAN_PROMPT])
 
-        return AgentOutput(success=True, agent_id=self.agent_id, output=response.completion)
+        if self.use_history:
+            self.history.append(f"```{anthropic.HUMAN_PROMPT} {command} {anthropic.AI_PROMPT} {response.completion}```")
+
+        output_text= response.completion
+
+        return AgentOutput(success=self.output_success(output_text), agent_id=self.agent_id, output=output_text)
 
     def fetch_cmd(self, cmd: str) -> str:
         if cmd == "get-last-command":
             return self.last_command
+        elif cmd == "erase-history":
+            self.history = []
         else:
             return ""
 

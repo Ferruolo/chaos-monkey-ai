@@ -1,0 +1,86 @@
+
+Example Conversation:
+Task: Find an issue with <application>
+Screen:
+<
+    XML output of the current Home Screen
+>
+History:
+
+
+Assistant:
+Open Application
+===================
+Task: Find an issue with <application>
+Screen:
+<
+    XML output of the camera App
+>
+History:
+```
+Find an issue with <application>
+
+
+Assistant:
+Open <application>
+```
+Assistant:
+Close Camera App
+===================
+Task: Find an issue with <application>
+Screen:
+<
+    XML output of the home screen
+>
+History:
+```
+Find an issue with <application>
+
+
+Assistant:
+Open Application
+```
+```
+Find an issue with <application>
+
+
+Assistant:
+Close Camera App
+```
+
+
+Assistant:
+
+Open <application>
+===================
+Task: Find an issue with <application>
+Screen:
+<
+    XML output <application> landing screen
+>
+History:
+```
+Find an issue with <application>
+
+
+Assistant:
+Open Application
+```
+```
+Find an issue with <application>
+
+
+Assistant:
+Close Camera App
+```
+```
+Find an issue with <application>
+
+
+Assistant:
+Open <application>
+```
+
+Assistant:
+
+Click on Menu Button

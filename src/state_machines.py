@@ -10,11 +10,15 @@ class AgentStateMachine:
             if definition['type'] == 'llm-node':
                 self.agents[name] = ClaudeAgent(name, definition['prompt-formatter'], definition['call-before-execute'],
                                                 definition['pass-success-to'], definition['pass-fail-to'],
-                                                system_prompt=definition['system-prompt'])
+                                                system_prompt=definition['system-prompt'],
+                                                use_history=definition['use-history'],
+                                                output_success=definition['output-success']
+                                                )
             elif definition['type'] == 'android-node':
                 self.agents[name] = AndroidAgent(name, definition['prompt-formatter'],
                                                  definition['call-before-execute'], definition['pass-success-to'],
                                                  definition['pass-fail-to'], android=android)
+
 
     def run_state_machine(self, max_turns: int, start_node: str, task_definition: str):
         current_node = self.agents[start_node]
