@@ -2,6 +2,14 @@ import os
 import string
 import subprocess
 import time
+import pydantic
+import json
+from typing import List
+
+
+class ControllerCommand(pydantic.BaseModel):
+    command_name: str
+    command_inputs: List[int]
 
 
 class AndroidController:
@@ -46,3 +54,29 @@ class AndroidController:
         print("Shutting Down!")
         subprocess.run(f"{self.adb_path} emu kill", shell=True)
         time.sleep(20)
+
+    def parse(self, command: str) -> (bool, str):
+        parsed_json = json.loads(command)
+        command_mod = ControllerCommand(**parsed_json)
+
+        # TODO: This is a bit verbose, and I don't like hardcoding
+        # TODO: Clean it up!! Messy!
+        if command_mod.command_name == "get_screen":
+            return True, self.get_screen()
+        elif command_mod.command_name == "tap":
+            if len(command_mod.command_inputs) != 2:
+                raise Exception("tap command takes two arguments")
+            else:
+                [x, y] = command_mod.command_inputs
+                self.tap_area_on_screen(x, y)
+                return True, ""
+        elif command_mod.command_name == "swipe":
+            if len(command_mod.command_inputs) < 5:
+                raise Exception("swipe command takes 5 arguments")
+            else:
+                self.swipe(*command_mod.command_inputs)
+                return True, ""
+        elif command_mod.command_name == "shutdown":
+            self.shutdown()
+            return True, ""
+        return False
