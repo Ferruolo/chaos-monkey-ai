@@ -4,7 +4,7 @@ import string
 import subprocess
 import time
 from typing import List
-
+import re
 import pydantic
 
 
@@ -15,6 +15,18 @@ import pydantic
 class ControllerCommand(pydantic.BaseModel):
     command_name: str
     command_inputs: List[int]
+
+
+def parse_input(x):
+    json_pattern = re.compile(r'{\s*"command_name":\s*"tap",\s*"command_inputs":\s*\[\s*(\d+\s*,\s*)*\d+\s*\]\s*}')
+    json_match = json_pattern.search(x)
+    if json_match:
+        json_command = json_match.group(0)
+        # Print the formatted JSON
+        parsed_json = json.loads(json_command)
+        return parsed_json
+    else:
+        raise Exception("JSON command not found in the input text.")
 
 
 # Main Android Controller Class
@@ -64,7 +76,8 @@ class AndroidController:
         time.sleep(20)
 
     def parse(self, command: str) -> (bool, str):
-        parsed_json = json.loads(command)
+        parsed_json = parse_input(command)
+        print(parsed_json)
         command_mod = ControllerCommand(**parsed_json)
 
         # TODO: This is a bit verbose, and I don't like hardcoding

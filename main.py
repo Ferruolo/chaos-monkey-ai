@@ -3,7 +3,8 @@ from src.state_machines import AgentStateMachine
 from src.android_controller import AndroidController
 
 
-prompt = "Simply find a way to break GMAIL using WIFI"
+prompt = ("Test how gmail behaves when we launch the app on the device without internet connection as well as what "
+          "happens when connection is back online.")
 
 
 

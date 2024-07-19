@@ -13,8 +13,8 @@ load_dotenv()
 """
 Goal:
 We are going to export most of the control code to the state machine router,
-rather than include it in the agent coding. This way we can minimize the amount of
-code written
+rather than include it in the agent coding. This way we can
+keep life simple
 """
 
 
@@ -57,6 +57,7 @@ class ClaudeAgent(Agent):
         self.client = anthropic.Anthropic(api_key=os.environ["CLAUDE_API_KEY"])
         self.model = model
         self.last_command = ""
+        self.history =
 
     def run(self, command: str) -> AgentOutput:
         self.last_command = command

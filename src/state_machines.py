@@ -2,7 +2,6 @@ from src.agents import AndroidAgent, ClaudeAgent, AgentOutput
 from src.android_controller import AndroidController
 
 
-
 class AgentStateMachine:
     def __init__(self, definitions, android: AndroidController) -> None:
         self.agents = {}
@@ -27,6 +26,7 @@ class AgentStateMachine:
 
             prompt = current_node.format_prompt(task_definition, previous_output, fetched_data)
             output: AgentOutput = current_node.run(prompt)
+            print(f"{current_node.agent_id} -> {output.success}: {output.output}")
             previous_output = output.output
             if output.success:
                 current_node = self.agents[current_node.pass_success_to]
