@@ -1,9 +1,18 @@
-from state_machines import Agent
-import anthropic
 import os
+
+import anthropic
 from dotenv import load_dotenv
 
+from state_machines import Agent, AgentOutput
+
 load_dotenv()
+
+"""
+Goal:
+We are going to export most of the control code to the state machine router,
+rather than include it in the agent coding. This way we can 
+
+"""
 
 
 # Basic Claude Agent
@@ -19,14 +28,10 @@ class ClaudeAgent(Agent):
         self.prompt_input = self.prompt_formatter(command)(data)
         prompt = f"{self.system_prompt} {anthropic.HUMAN_PROMPT}  {anthropic.AI_PROMPT}"
 
-        response = self.client.completions.create(
-            model="claude-2",
-            prompt=prompt,
-            max_tokens_to_sample=300,
-            stop_sequences=[anthropic.HUMAN_PROMPT]
-        )
+        response = self.client.completions.create(model="claude-2", prompt=prompt, max_tokens_to_sample=300,
+                                                  stop_sequences=[anthropic.HUMAN_PROMPT])
 
-        return response
+        return AgentOutput(success=True, agent_id=self.agent_id, output=response)
 
 
 class AndroidAgent(Agent):
@@ -34,14 +39,12 @@ class AndroidAgent(Agent):
         super().__init__(agent_id)
         self.android = android
 
-
     def run(self, command, data):
         if data != "":
             return
 
         try:
             _, data = self.android.parse(command)
+            return AgentOutput(success=True, agent_id=self.agent_id, output=data)
         except Exception as e:
-            return e.__str__()
-
-
+            return AgentOutput(success=False, agent_id=self.agent_id, output=e.__str__())

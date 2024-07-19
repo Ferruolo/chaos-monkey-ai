@@ -1,11 +1,10 @@
 import pydantic
 
 
-
 class AgentOutput(pydantic.BaseModel):
+    success: bool = True
     agent_id: int
-    command: str
-    data: str
+    output: str
 
 
 class Agent:
@@ -16,11 +15,7 @@ class Agent:
     def run(self, command, data) -> AgentOutput:
         # Creates Infinite Loop, basically just a demo
         # I haven't written a real application in python in months
-        return AgentOutput(
-            agent_id=self.agent_id,
-            command=command,
-            data=data
-        )
+        return AgentOutput(success=True, agent_id=self.agent_id, output="")
 
 
 class AgentStateMachine:

@@ -7,11 +7,18 @@ import json
 from typing import List
 
 
+## We use Pydantic to enforce the format of the object.
+## Python Errors then allow us to create a basic Chain-of-Thought
+## Feedback process which should eventually give us the right type
+## Credit for the idea belongs to High Dimensional Research/nolita.ai
 class ControllerCommand(pydantic.BaseModel):
     command_name: str
     command_inputs: List[int]
 
 
+# Main Android Controller Class
+# Creates wrapper around ADB shell, preventing us from a situation where we have LLM straight to terminal
+# as that could create some major issues
 class AndroidController:
     def __init__(self, DEVICE_NAME: string = "Pixel_4_API_35"):
         self.android_sdk_path = "/home/andrewf/Android/Sdk"
@@ -61,7 +68,7 @@ class AndroidController:
 
         # TODO: This is a bit verbose, and I don't like hardcoding
         # TODO: Clean it up!! Messy!
-        if command_mod.command_name == "get_screen":
+        if command_mod.command_name == "get-screen":
             return True, self.get_screen()
         elif command_mod.command_name == "tap":
             if len(command_mod.command_inputs) != 2:
@@ -79,4 +86,4 @@ class AndroidController:
         elif command_mod.command_name == "shutdown":
             self.shutdown()
             return True, ""
-        return False
+        return False, "Accepted Commands are get-screen, tap, swipe, shutdown. Please only select from these"
