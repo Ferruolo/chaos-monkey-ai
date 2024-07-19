@@ -75,6 +75,37 @@ class AndroidController:
         subprocess.run(f"{self.adb_path} emu kill", shell=True)
         time.sleep(20)
 
+    def push_app(self, app_path: str):
+        if not os.path.exists(app_path):
+            raise FileNotFoundError(f"The app file does not exist at path: {app_path}")
+
+        # Get the filename from the path
+        app_filename = os.path.basename(app_path)
+
+        # Push the app to the device
+        push_command = f"{self.adb_path} push {app_path} /data/local/tmp/{app_filename}"
+        result = subprocess.run(push_command, shell=True, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            raise Exception(f"Failed to push app to device. Error: {result.stderr}")
+
+        print(f"Successfully pushed {app_filename} to the device.")
+
+        # Install the app
+        install_command = f"{self.adb_path} shell pm install -r /data/local/tmp/{app_filename}"
+        result = subprocess.run(install_command, shell=True, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            raise Exception(f"Failed to install app on device. Error: {result.stderr}")
+
+        print(f"Successfully installed {app_filename} on the device.")
+
+        # Clean up the temporary file
+        cleanup_command = f"{self.adb_path} shell rm /data/local/tmp/{app_filename}"
+        subprocess.run(cleanup_command, shell=True)
+
+        return True, f"App {app_filename} has been successfully pushed and installed on the device."
+
     def parse(self, command: str) -> (bool, str):
         parsed_json = parse_input(command)
         print(parsed_json)
@@ -97,6 +128,12 @@ class AndroidController:
             else:
                 self.swipe(*command_mod.command_inputs)
                 return True, ""
+        # elif command_mod.command_name == "push-app":
+        #     if len(command_mod.command_inputs) != 1:
+        #         raise Exception("push-app command takes one argument (the path to the app)")
+        #     else:
+        #         app_path = command_mod.command_inputs[0]
+        #         return self.push_app(app_path)
         elif command_mod.command_name == "shutdown":
             self.shutdown()
             return True, ""

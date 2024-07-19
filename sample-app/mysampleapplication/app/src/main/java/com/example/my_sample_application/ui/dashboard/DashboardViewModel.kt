@@ -42,6 +42,7 @@ class DashboardViewModel : ViewModel() {
     private fun extractMessageFromJson(jsonString: String): String {
         // This is a simple way to extract the "message" field from JSON
         // For production code, consider using a proper JSON parsing library
+
         val messageRegex = """"message"\s*:\s*"([^"]+)"""".toRegex()
         val matchResult = messageRegex.find(jsonString)
         return matchResult?.groupValues?.get(1) ?: "Message not found in response"
