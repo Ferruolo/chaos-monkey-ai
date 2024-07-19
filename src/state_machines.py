@@ -29,8 +29,7 @@ class Agent:
         return AgentOutput(success=True, agent_id=self.agent_id, output="")
 
     def format_prompt(self, initial_prompt: str, previous_output: str, fetched_items: List[str]) -> str:
-        return self.prompt_formatter(initial_prompt)
-
+        return self.prompt_formatter(initial_prompt)(previous_output)(fetched_items)
     def fetch_cmd(self, cmd: str) -> str:
         return cmd
 

@@ -1,5 +1,5 @@
 import os
-
+from android_controller import AndroidController
 import anthropic
 from dotenv import load_dotenv
 
@@ -10,41 +10,49 @@ load_dotenv()
 """
 Goal:
 We are going to export most of the control code to the state machine router,
-rather than include it in the agent coding. This way we can 
-
+rather than include it in the agent coding. This way we can minimize the amount of
+code written
 """
 
-
 # Basic Claude Agent
+# TODO: Add history for chain-of-thought prompting
 class ClaudeAgent(Agent):
-    def __init__(self, agent_id, system_prompt):
-        super().__init__(agent_id)
-        self.prompt_input = None
+    def __init__(self, *args, system_prompt, model="claude-2"):
+        super().__init__(*args)
         self.system_prompt = system_prompt
         self.client = anthropic.Anthropic(api_key=os.environ["CLAUDE_API_KEY"])
-        self.prompt_formatter = lambda x: lambda y: f"COMMAND: {x} \n\n DATA: {y}"
+        self.model = model
+        self.last_command = ""
 
-    def run(self, command, data):
-        self.prompt_input = self.prompt_formatter(command)(data)
-        prompt = f"{self.system_prompt} {anthropic.HUMAN_PROMPT}  {anthropic.AI_PROMPT}"
+    def run(self, command: str) -> AgentOutput:
+        self.last_command = command
+        prompt = f"{self.system_prompt} {anthropic.HUMAN_PROMPT} {command}  {anthropic.AI_PROMPT}"
 
-        response = self.client.completions.create(model="claude-2", prompt=prompt, max_tokens_to_sample=300,
+        response = self.client.completions.create(model=self.model, prompt=prompt, max_tokens_to_sample=300,
                                                   stop_sequences=[anthropic.HUMAN_PROMPT])
 
         return AgentOutput(success=True, agent_id=self.agent_id, output=response)
 
 
+    def fetch_cmd(self, cmd: str) -> str:
+        if cmd == "get-last-command":
+            return self.last_command
+        else:
+            return ""
+
+
 class AndroidAgent(Agent):
     def __init__(self, agent_id, android):
         super().__init__(agent_id)
-        self.android = android
+        self.android: AndroidController = android
 
-    def run(self, command, data):
-        if data != "":
-            return
-
+    def run(self, command):
         try:
             _, data = self.android.parse(command)
             return AgentOutput(success=True, agent_id=self.agent_id, output=data)
         except Exception as e:
             return AgentOutput(success=False, agent_id=self.agent_id, output=e.__str__())
+
+    def fetch_cmd(self, cmd: str) -> str:
+        if cmd == "get-screen":
+            return self.android.get_screen()
