@@ -1,40 +1,6 @@
-from typing import List
-
-import pydantic
-
-from behavior_definition import CallCommand
-from src.agents import AndroidAgent, ClaudeAgent
+from src.agents import AndroidAgent, ClaudeAgent, AgentOutput
 from src.android_controller import AndroidController
 
-
-class AgentOutput(pydantic.BaseModel):
-    success: bool = True
-    agent_id: str
-    output: str
-
-
-# This is just a definition to mock up agent behavior and the
-# Agent type and should definitely never ever be used for any real functionality
-class Agent:
-    def __init__(self, agent_id: str, prompt_formatter, call_before_execute: List[CallCommand], pass_success_to: str,
-                 pass_failure_to: str) -> None:
-        self.agent_id = agent_id
-        self.call_before_execute = call_before_execute
-        self.prompt_formatter = prompt_formatter
-        # self.fetch_commands = fetch_commands
-        self.pass_success_to = pass_success_to
-        self.pass_failure_to = pass_failure_to
-
-    def run(self, command: str) -> AgentOutput:
-        # Creates Infinite Loop, basically just a demo
-        # I haven't written a real application in python in months
-        return AgentOutput(success=True, agent_id=self.agent_id, output="")
-
-    def format_prompt(self, initial_prompt: str, previous_output: str, fetched_items: List[str]) -> str:
-        return self.prompt_formatter(initial_prompt)(previous_output)(fetched_items)
-
-    def fetch_cmd(self, cmd: str) -> str:
-        return cmd
 
 
 class AgentStateMachine:
@@ -44,12 +10,12 @@ class AgentStateMachine:
             # TODO: Simplify in future, DRYY
             if definition['type'] == 'llm-node':
                 self.agents[name] = ClaudeAgent(name, definition['prompt-formatter'], definition['call-before-execute'],
-                                                definition['pass-success-to'], definition['pass-failure-to'],
+                                                definition['pass-success-to'], definition['pass-fail-to'],
                                                 system_prompt=definition['system-prompt'])
             elif definition['type'] == 'android-node':
                 self.agents[name] = AndroidAgent(name, definition['prompt-formatter'],
                                                  definition['call-before-execute'], definition['pass-success-to'],
-                                                 definition['pass-failure-to'], android=android)
+                                                 definition['pass-fail-to'], android=android)
 
     def run_state_machine(self, max_turns: int, start_node: str, task_definition: str):
         current_node = self.agents[start_node]

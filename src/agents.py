@@ -1,9 +1,12 @@
 import os
-from android_controller import AndroidController
+from typing import List
+
 import anthropic
+import pydantic
 from dotenv import load_dotenv
 
-from state_machines import Agent, AgentOutput
+from src.android_controller import AndroidController
+from src.behavior_definition import CallCommand
 
 load_dotenv()
 
@@ -13,6 +16,36 @@ We are going to export most of the control code to the state machine router,
 rather than include it in the agent coding. This way we can minimize the amount of
 code written
 """
+
+
+class AgentOutput(pydantic.BaseModel):
+    success: bool = True
+    agent_id: str
+    output: str
+
+
+# This is just a definition to mock up agent behavior and the
+# Agent type and should definitely never ever be used for any real functionality
+class Agent:
+    def __init__(self, agent_id: str, prompt_formatter, call_before_execute: List[CallCommand], pass_success_to: str,
+                 pass_failure_to: str) -> None:
+        self.agent_id = agent_id
+        self.call_before_execute = call_before_execute
+        self.prompt_formatter = prompt_formatter
+        # self.fetch_commands = fetch_commands
+        self.pass_success_to = pass_success_to
+        self.pass_failure_to = pass_failure_to
+
+    def run(self, command: str) -> AgentOutput:
+        # Creates Infinite Loop, basically just a demo
+        # I haven't written a real application in python in months
+        return AgentOutput(success=True, agent_id=self.agent_id, output="")
+
+    def format_prompt(self, initial_prompt: str, previous_output: str, fetched_items: List[str]) -> str:
+        return self.prompt_formatter(initial_prompt)(previous_output)(fetched_items)
+
+    def fetch_cmd(self, cmd: str) -> str:
+        return cmd
 
 
 # Basic Claude Agent
@@ -32,7 +65,7 @@ class ClaudeAgent(Agent):
         response = self.client.completions.create(model=self.model, prompt=prompt, max_tokens_to_sample=300,
                                                   stop_sequences=[anthropic.HUMAN_PROMPT])
 
-        return AgentOutput(success=True, agent_id=self.agent_id, output=response)
+        return AgentOutput(success=True, agent_id=self.agent_id, output=response.completion)
 
     def fetch_cmd(self, cmd: str) -> str:
         if cmd == "get-last-command":

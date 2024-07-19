@@ -1,10 +1,11 @@
+import json
 import os
 import string
 import subprocess
 import time
-import pydantic
-import json
 from typing import List
+
+import pydantic
 
 
 ## We use Pydantic to enforce the format of the object.
