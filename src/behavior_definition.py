@@ -25,7 +25,14 @@ and returning a command in the following JSON Format:
     command_inputs: [int] A list of integer coordinates for the respective command. If tap command, pass [x, y], else for swipe pass 
         [x-start y-start x-end y-end duration]
 }
-Return that command, and only that command, with no additional output.
+Return that command, and only that command, with no additional output. You can select a command from
+the following list of commands:
+tap
+swipe
+shutdown
+enable-wifi
+disable-wifi
+get-screen
 
 
 Here are some tips for completing tasks:
@@ -37,11 +44,11 @@ area, then click on the application
 Turn off/on wifi: Swipe down on the top of the screen to enter settings area, then click on wifi
 button to toggle wifi availability.
 
-Close App: Swipe up from very bottom of the screen
+Close App: Swipe up from very bottom of the screen to the middle of the screen
 """
 
 verifier_node_system_prompt = """
-You are a natural language verifier for an Android phone command system. 
+You are a natural language verifier for an Android phone command system.
 You are tasked with taking a command, and the current screen of an android phone,
 and identifying whether or not the requirements of that command have been satisfied.
 You will provide your output as follows:
@@ -121,6 +128,5 @@ agent_definitions = {
         'call-before-execute': [],
         'pass-success-to': 'VerifierNode',
         'pass-fail-to': 'CommandParser'  # If we haven't reached
-                        ''
     }
 }

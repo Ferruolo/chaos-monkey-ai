@@ -17,8 +17,8 @@ class ControllerCommand(pydantic.BaseModel):
     command_inputs: List[int]
 
 
-def parse_input(x):
-    json_pattern = re.compile(r'{\s*"command_name":\s*"tap",\s*"command_inputs":\s*\[\s*(\d+\s*,\s*)*\d+\s*\]\s*}')
+def parse_json(x):
+    json_pattern = re.compile('\{\s*"command_name"\s*:\s*"(tap|swipe|shutdown|enable-wifi|disable-wifi|get-screen)"\s*,\s*"command_inputs"\s*:\s*\[((?:\d+(?:\s*,\s*\d+){1,4})?)\]\s*\}')
     json_match = json_pattern.search(x)
     if json_match:
         json_command = json_match.group(0)
@@ -69,11 +69,27 @@ class AndroidController:
             file = f.read()
         return file
 
+    def enable_wifi(self):
+        enable_command = f"{self.adb_path} shell svc wifi enable"
+        result = subprocess.run(enable_command, shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise Exception(f"Failed to enable WiFi. Error: {result.stderr}")
+        print("WiFi enabled successfully.")
+        return True, "WiFi enabled successfully."
+
+    def disable_wifi(self):
+        disable_command = f"{self.adb_path} shell svc wifi disable"
+        result = subprocess.run(disable_command, shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise Exception(f"Failed to disable WiFi. Error: {result.stderr}")
+        print("WiFi disabled successfully.")
+        return True, "WiFi disabled successfully."
+
     def shutdown(self):
         time.sleep(5)
         print("Shutting Down!")
         subprocess.run(f"{self.adb_path} emu kill", shell=True)
-        time.sleep(20)
+        time.sleep(10)
 
     def push_app(self, app_path: str, app_filename: str):
         # TODO: This doesn't work, abandoning for now
@@ -107,12 +123,10 @@ class AndroidController:
         return True, f"App {app_filename} has been successfully pushed and installed on the device."
 
     def parse(self, command: str) -> (bool, str):
-        parsed_json = parse_input(command)
+        parsed_json = parse_json(command)
         print(parsed_json)
         command_mod = ControllerCommand(**parsed_json)
 
-        # TODO: This is a bit verbose, and I don't like hardcoding
-        # TODO: Clean it up!! Messy!
         if command_mod.command_name == "get-screen":
             return True, self.get_screen()
         elif command_mod.command_name == "tap":
@@ -131,4 +145,8 @@ class AndroidController:
         elif command_mod.command_name == "shutdown":
             self.shutdown()
             return True, ""
-        return False, "Accepted Commands are get-screen, tap, swipe, shutdown. Please only select from these"
+        elif command_mod.command_name == "enable-wifi":
+            return self.enable_wifi()
+        elif command_mod.command_name == "disable-wifi":
+            return self.disable_wifi()
+        return False, "Accepted Commands are get-screen, tap, swipe, shutdown, enable-wifi, disable-wifi. Please only select from these"

@@ -1,4 +1,3 @@
-import os
 from typing import List
 
 import anthropic
@@ -32,7 +31,6 @@ class Agent:
         self.agent_id = agent_id
         self.call_before_execute = call_before_execute
         self.prompt_formatter = prompt_formatter
-        # self.fetch_commands = fetch_commands
         self.pass_success_to = pass_success_to
         self.pass_failure_to = pass_failure_to
 
@@ -64,8 +62,9 @@ class ClaudeAgent(Agent):
         self.len_recent_history = 5
         self.output_success = output_success
 
-    def run(self, command: str) -> AgentOutput:
-        self.last_command = command
+    def run(self, command: str, save_last_cmd=True) -> AgentOutput:
+        if save_last_cmd:
+            self.last_command = command
 
         history = ""
 
@@ -80,9 +79,9 @@ class ClaudeAgent(Agent):
         response = self.claude.call_api(prompt)
 
         if self.use_history:
-            self.history.append(f"```{anthropic.HUMAN_PROMPT} {command} {anthropic.AI_PROMPT} {response.completion}```")
+            self.history.append(f"```{anthropic.HUMAN_PROMPT} {command} {anthropic.AI_PROMPT} {response}```")
 
-        output_text = response.completion
+        output_text = response
 
         return AgentOutput(success=self.output_success(output_text), agent_id=self.agent_id, output=output_text)
 
