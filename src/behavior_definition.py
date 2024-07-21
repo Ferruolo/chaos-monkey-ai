@@ -1,8 +1,8 @@
 import pydantic
 
 
-## TODO: Can we move this whole thing to JSON in the future. I'm gonna be lazy
-## TODO: And keep it in python, but this needs to be in JSON
+# TODO: Can we move this whole thing to JSON in the future. I'm gonna be lazy
+# TODO: And keep it in python, but this needs to be in JSON
 
 class CallCommand(pydantic.BaseModel):
     agent_name: str
@@ -80,7 +80,7 @@ agent_definitions = {
         'pass-success-to': 'CommandParser',
         'pass-fail-to': 'BREAK',  # Initiates Break as Failure
         'use-history': True,
-        'output-success': lambda x : True,
+        'output-success': lambda x: True,
     },
     ## This Module takes in a task from the master node and
     # the current state and determines the next
@@ -95,7 +95,7 @@ agent_definitions = {
         'pass-success-to': 'AndroidNode',
         'pass-fail-to': 'BREAK',  # Should Never Fail
         'use-history': True,
-        'output-success': lambda x : True,
+        'output-success': lambda x: True,
     },
     ##
     # This Module determines whether the current task has been achieved given
@@ -114,13 +114,13 @@ agent_definitions = {
         'use-history': False,
         'output-success': check_output,
     },
-    ## Android Controller, self-explanatory:
+    # Android Controller, self-explanatory:
     'AndroidNode': {
         'type': "android-node",
         'prompt-formatter': lambda x: lambda y: lambda z: f"{y}",
         'call-before-execute': [],
         'pass-success-to': 'VerifierNode',
         'pass-fail-to': 'CommandParser'  # If we haven't reached
-        ''
+                        ''
     }
 }

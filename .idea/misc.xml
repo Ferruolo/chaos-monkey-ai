@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.8 (gattaca)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (gattaca)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 (chaos-monkey-ai)" project-jdk-type="Python SDK" />
 </project>

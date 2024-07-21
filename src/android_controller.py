@@ -33,14 +33,14 @@ def parse_input(x):
 # Creates wrapper around ADB shell, preventing us from a situation where we have LLM straight to terminal
 # as that could create some major issues
 class AndroidController:
-    def __init__(self, DEVICE_NAME: string = "Pixel_4_API_35"):
-        self.android_sdk_path = "/home/andrewf/Android/Sdk"
+    def __init__(self, device_name: string = "Pixel_Fold_API_35"):
+        self.android_sdk_path = os.getenv("ANDROID_SDK_PATH")
         self.emulator_path = os.path.join(self.android_sdk_path, "emulator", "emulator")
         self.adb_path = os.path.join(self.android_sdk_path, "platform-tools", "adb")
 
-        emulator_command = f"{self.emulator_path} -avd {DEVICE_NAME}"
+        emulator_command = f"{self.emulator_path} -avd {device_name}"
         subprocess.Popen(emulator_command, shell=True)
-        print(f"Starting emulator for {DEVICE_NAME}...")
+        print(f"Starting emulator for {device_name}...")
 
         # Wait for the emulator to boot
         while True:
@@ -75,15 +75,15 @@ class AndroidController:
         subprocess.run(f"{self.adb_path} emu kill", shell=True)
         time.sleep(20)
 
-    def push_app(self, app_path: str):
+    def push_app(self, app_path: str, app_filename: str):
+        # TODO: This doesn't work, abandoning for now
         if not os.path.exists(app_path):
             raise FileNotFoundError(f"The app file does not exist at path: {app_path}")
 
-        # Get the filename from the path
-        app_filename = os.path.basename(app_path)
+        print(f"App Filename: {app_filename}")
 
         # Push the app to the device
-        push_command = f"{self.adb_path} push {app_path} /data/local/tmp/{app_filename}"
+        push_command = f"{self.adb_path} push \"{app_path}\" /data/local/tmp/{app_filename}"
         result = subprocess.run(push_command, shell=True, capture_output=True, text=True)
 
         if result.returncode != 0:
@@ -128,12 +128,6 @@ class AndroidController:
             else:
                 self.swipe(*command_mod.command_inputs)
                 return True, ""
-        # elif command_mod.command_name == "push-app":
-        #     if len(command_mod.command_inputs) != 1:
-        #         raise Exception("push-app command takes one argument (the path to the app)")
-        #     else:
-        #         app_path = command_mod.command_inputs[0]
-        #         return self.push_app(app_path)
         elif command_mod.command_name == "shutdown":
             self.shutdown()
             return True, ""

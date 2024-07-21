@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from src.android_controller import AndroidController
 from src.behavior_definition import CallCommand
-
+from src.anthropic_interface import AnthropicInterface
 load_dotenv()
 
 """
@@ -50,12 +50,14 @@ class Agent:
 
 # Basic Claude Agent
 # TODO: Add history for chain-of-thought prompting
+# No longer uses anthropic agent because
 class ClaudeAgent(Agent):
-    def __init__(self, *args, system_prompt, use_history=False, output_success=lambda x: True, model="claude-2"):
+    def __init__(self, *args, system_prompt, use_history=False, output_success=lambda x: True,
+                 model_name="claude-3-sonnet-20240229"):
         super().__init__(*args)
         self.system_prompt = system_prompt
-        self.client = anthropic.Anthropic(api_key=os.environ["CLAUDE_API_KEY"])
-        self.model = model
+        self.claude = AnthropicInterface(model_name=model_name)
+        self.model_name = model_name
         self.last_command = ""
         self.history = []
         self.use_history = use_history
@@ -72,18 +74,15 @@ class ClaudeAgent(Agent):
                 self.history) > self.len_recent_history else self.history
             history = "History:\n" + '\n'.join(recent_history)
 
-
         prompt = f"{self.system_prompt}\n{anthropic.HUMAN_PROMPT}\n{command}\n{history}\n{anthropic.AI_PROMPT}"
         print(prompt)
 
-
-        response = self.client.completions.create(model=self.model, prompt=prompt, max_tokens_to_sample=300,
-                                                  stop_sequences=[anthropic.HUMAN_PROMPT])
+        response = self.claude.call_api(prompt)
 
         if self.use_history:
             self.history.append(f"```{anthropic.HUMAN_PROMPT} {command} {anthropic.AI_PROMPT} {response.completion}```")
 
-        output_text= response.completion
+        output_text = response.completion
 
         return AgentOutput(success=self.output_success(output_text), agent_id=self.agent_id, output=output_text)
 
