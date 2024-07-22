@@ -3,10 +3,11 @@ from typing import List
 import anthropic
 import pydantic
 from dotenv import load_dotenv
-
+import re
 from src.android_controller import AndroidController
 from src.behavior_definition import CallCommand
 from src.anthropic_interface import AnthropicInterface
+
 load_dotenv()
 
 """
@@ -15,6 +16,10 @@ We are going to export most of the control code to the state machine router,
 rather than include it in the agent coding. This way we can
 keep life simple
 """
+
+
+def remove_xml_and_content(text):
+    return re.sub('<.*?>(.*?)</.*?>', '', text, flags=re.DOTALL)
 
 
 class AgentOutput(pydantic.BaseModel):
@@ -61,6 +66,7 @@ class ClaudeAgent(Agent):
         self.use_history = use_history
         self.len_recent_history = 5
         self.output_success = output_success
+        self.last_output = ""
 
     def run(self, command: str, save_last_cmd=True) -> AgentOutput:
         if save_last_cmd:
@@ -74,7 +80,7 @@ class ClaudeAgent(Agent):
             history = "History:\n" + '\n'.join(recent_history)
 
         prompt = f"{self.system_prompt}\n{anthropic.HUMAN_PROMPT}\n{command}\n{history}\n{anthropic.AI_PROMPT}"
-        print(prompt)
+        print(remove_xml_and_content(prompt))
 
         response = self.claude.call_api(prompt)
 
@@ -82,7 +88,7 @@ class ClaudeAgent(Agent):
             self.history.append(f"```{anthropic.HUMAN_PROMPT} {command} {anthropic.AI_PROMPT} {response}```")
 
         output_text = response
-
+        self.last_output = output_text
         return AgentOutput(success=self.output_success(output_text), agent_id=self.agent_id, output=output_text)
 
     def fetch_cmd(self, cmd: str) -> str:
@@ -90,6 +96,9 @@ class ClaudeAgent(Agent):
             return self.last_command
         elif cmd == "erase-history":
             self.history = []
+            return ""
+        elif cmd == "get-last-output":
+            return self.last_output
         else:
             return ""
 

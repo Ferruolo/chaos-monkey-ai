@@ -19,7 +19,6 @@ class AgentStateMachine:
                                                  definition['call-before-execute'], definition['pass-success-to'],
                                                  definition['pass-fail-to'], android=android)
 
-
     def run_state_machine(self, max_turns: int, start_node: str, task_definition: str):
         current_node = self.agents[start_node]
         previous_output = ""

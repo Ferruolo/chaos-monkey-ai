@@ -6,6 +6,10 @@ import time
 from typing import List
 import re
 import pydantic
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 ## We use Pydantic to enforce the format of the object.
@@ -67,6 +71,12 @@ class AndroidController:
         time.sleep(0.5)
         with open("window_dump.xml", "r") as f:
             file = f.read()
+        wifi_code = subprocess.run(f"{self.adb_path} shell settings get global wifi_on", shell=True)
+        if wifi_code:
+            file += "Wifi is On"
+        else:
+            file += "Wifi is off"
+
         return file
 
     def enable_wifi(self):

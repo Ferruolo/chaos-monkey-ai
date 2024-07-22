@@ -10,3 +10,6 @@
 
 
 ## Basic Explanation
+This repository uses agentic AI to move through an 
+application, identifying the issues 
+

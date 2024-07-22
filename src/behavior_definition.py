@@ -12,8 +12,8 @@ class CallCommand(pydantic.BaseModel):
 master_node_system_prompt = """
 You are an Android Quality Assurance expert tasked with
 searching for errors in an app that would be encountered through
-normal usage. When given an xml output of the current app screen, along with a list 
-of your previous movements and their outcome, you will provide the next, and only the next command
+normal usage. You will be given a mission, along with the current XML output of
+an android screen, and will determine the output using this
 """
 
 command_node_system_prompt = """
@@ -35,22 +35,15 @@ disable-wifi
 get-screen
 
 
-Here are some tips for completing tasks:
- 
-Open an App: To Open an app, swipe down
-from middle of the screen to 3/4 of the way down the screen to open the applications 
-area, then click on the application
-
-Turn off/on wifi: Swipe down on the top of the screen to enter settings area, then click on wifi
-button to toggle wifi availability.
-
-Close App: Swipe up from very bottom of the screen to the middle of the screen
 """
+
 
 verifier_node_system_prompt = """
 You are a natural language verifier for an Android phone command system.
-You are tasked with taking a command, and the current screen of an android phone,
+You are tasked with accepting a command and the current screen of an android phone,
 and identifying whether or not the requirements of that command have been satisfied.
+If you are accidentally passed a list of commands, you will identify a success if some, but not necessarily all
+of the requirements have been met
 You will provide your output as follows:
 if Success, return 
     <SUCCESS>
@@ -114,7 +107,7 @@ agent_definitions = {
         'prompt-formatter': lambda x: lambda y: lambda z: f"Task: {z[1]} | Current Screen: {z[0]} ",
         'call-before-execute': [
             CallCommand(agent_name="AndroidNode", agent_command="get-screen"),
-            CallCommand(agent_name="CommandParser", agent_command="get-last-command")
+            CallCommand(agent_name="MasterNode", agent_command="get-last-output")
         ],
         'pass-success-to': 'MasterNode',
         'pass-fail-to': 'CommandParser',  # If we haven't reached
