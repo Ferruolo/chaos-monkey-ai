@@ -32,7 +32,7 @@ class AgentStateMachine:
                             current_node.call_before_execute]
 
             prompt = current_node.format_prompt(task_definition, previous_output, fetched_data)
-            output: AgentOutput = current_node.run()
+            output: AgentOutput = current_node.run(prompt)
             print(f"{current_node.agent_id} -> {output.success}: {output.output}")
             previous_output = output.output
             if output.success:

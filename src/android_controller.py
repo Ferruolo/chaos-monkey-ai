@@ -21,7 +21,8 @@ class ControllerCommand(pydantic.BaseModel):
 
 
 def parse_json(x):
-    json_pattern = re.compile('\{\s*"command_name"\s*:\s*"(tap|swipe|shutdown|enable-wifi|disable-wifi|get-screen)"\s*,\s*"command_inputs"\s*:\s*\[((?:\d+(?:\s*,\s*\d+){1,4})?)\]\s*\}')
+    json_pattern = re.compile(
+        '\{\s*"command_name"\s*:\s*"(tap|swipe|shutdown|enable-wifi|disable-wifi|get-screen|do-nothing)"\s*,\s*"command_inputs"\s*:\s*\[((?:\d+(?:\s*,\s*\d+){1,5})?)\]\s*\}')
     json_match = json_pattern.search(x)
     if json_match:
         json_command = json_match.group(0)
@@ -71,28 +72,29 @@ class AndroidController:
         with open("window_dump.xml", "r") as f:
             file = f.read()
         wifi_code = subprocess.run(f"{self.adb_path} shell settings get global wifi_on", shell=True)
-        if wifi_code:
-            file += "Wifi is On"
-        else:
-            file += "Wifi is off"
+        print(f"Wifi Code: {wifi_code}")
+        # if wifi_code:
+        #     file += "Wifi is On"
+        # else:
+        #     file += "Wifi is off"
 
         return file
 
-    def enable_wifi(self):
-        enable_command = f"{self.adb_path} shell svc wifi enable"
+    def disable_wifi(self):
+        enable_command = f"{self.adb_path} shell cmd connectivity airplane-mode enable"
         result = subprocess.run(enable_command, shell=True, capture_output=True, text=True)
         if result.returncode != 0:
-            raise Exception(f"Failed to enable WiFi. Error: {result.stderr}")
-        print("WiFi enabled successfully.")
-        return True, "WiFi enabled successfully."
+            raise Exception(f"Failed to enable Airplane mode. Error: {result.stderr}")
 
-    def disable_wifi(self):
-        disable_command = f"{self.adb_path} shell svc wifi disable"
+        return True, "Wifi Turned Off."
+
+    def enable_wifi(self):
+        disable_command = f"{self.adb_path} shell cmd connectivity airplane-mode disable"
         result = subprocess.run(disable_command, shell=True, capture_output=True, text=True)
         if result.returncode != 0:
-            raise Exception(f"Failed to disable WiFi. Error: {result.stderr}")
-        print("WiFi disabled successfully.")
-        return True, "WiFi disabled successfully."
+            raise Exception(f"Failed to disable Airplane mode. Error: {result.stderr}")
+
+        return True, "Wifi Turned back On."
 
     def shutdown(self):
         time.sleep(5)
@@ -158,5 +160,7 @@ class AndroidController:
             return self.enable_wifi()
         elif command_mod.command_name == "disable-wifi":
             return self.disable_wifi()
+        elif command_mod.command_name == "do-nothing":
+            return True, "Did Nothing!"
         return False, ("Accepted Commands are get-screen, tap, swipe, shutdown, enable-wifi, disable-wifi. Please only "
                        "select from these")

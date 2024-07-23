@@ -8,6 +8,9 @@ class CallCommand(pydantic.BaseModel):
     agent_name: str
     agent_command: str
 
+# TODO: Fully swipe out of app
+# TODO: Write basic report on app
+
 
 master_node_system_prompt = """
 You are an Android Quality Assurance expert tasked with
@@ -33,8 +36,10 @@ shutdown
 enable-wifi
 disable-wifi
 get-screen
+do-nothing
 
-
+Remember that each command must contain both the command_name and command_inputs columns, otherwise the output will be 
+invalid. For commands that don't need command_inputs, consider just passing [0, 0]
 """
 
 
@@ -105,7 +110,7 @@ agent_definitions = {
     'VerifierNode': {
         'type': "llm-node",
         'system-prompt': verifier_node_system_prompt,
-        'prompt-formatter': lambda x: lambda y: lambda z: f"Task: {z[1]} | Current Screen: {z[0]} ",
+        'prompt-formatter': lambda x: lambda y: lambda z: f"Task: {z[1]} |Android Output: {y} |Current Screen: {z[0]} ",
         'call-before-execute': [
             CallCommand(agent_name="AndroidNode", agent_command="get-screen"),
             CallCommand(agent_name="MasterNode", agent_command="get-last-output")
