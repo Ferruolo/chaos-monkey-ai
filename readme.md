@@ -27,7 +27,7 @@ src/behavior_definition.py.
 
 ## Next steps:
 1. I want to move away from the manual node, but don't know how to prompt
-well enough too. Eventually, this node should do Depth First Search
+well enough to. Eventually, this node should do Depth First Search
 
 2. We need to add more commands so that the model has the total capability of a human CLI tester
 
