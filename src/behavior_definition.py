@@ -70,17 +70,18 @@ agent_definitions = {
     # and determines the task upon which the other nodes
     # will complete
     'MasterNode': {
-        'type': "llm-node",
+        'type': "manual-node",
         'system-prompt': master_node_system_prompt,
         'prompt-formatter': lambda x: lambda y: lambda z: f"Task: {x} | Current Screen: {z[0]}",
         'call-before-execute': [
-            CallCommand(agent_name="AndroidNode", agent_command="get-screen"),
+            # CallCommand(agent_name="AndroidNode", agent_command="get-screen"),
             CallCommand(agent_name="CommandParser", agent_command="erase-history"),
         ],
         'pass-success-to': 'CommandParser',
         'pass-fail-to': 'BREAK',  # Initiates Break as Failure
         'use-history': True,
         'output-success': lambda x: True,
+        'config-filepath': './agent_config.json'
     },
     ## This Module takes in a task from the master node and
     # the current state and determines the next

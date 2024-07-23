@@ -1,3 +1,4 @@
+import json
 from typing import List
 
 import anthropic
@@ -118,3 +119,56 @@ class AndroidAgent(Agent):
     def fetch_cmd(self, cmd: str) -> str:
         if cmd == "get-screen":
             return self.android.get_screen()
+
+
+# Acts like a Claude Agent but is not, as
+# Claude puts the Artificial in Artificial
+# Intelligence
+class ManualAgent(Agent):
+    def __init__(self, *args, filepath):
+        super().__init__(*args)
+        self.commands = list()
+        self.filepath = filepath
+        # TODO: MAKE THIS PYDANTIC
+        with open(filepath, 'r') as f:
+            self.config_data = json.load(f)
+        self.app_name = self.config_data['app-name']
+        self.pages = self.config_data['pages']
+        self.last_command = ""
+        self.last_output = ""
+        self.generate_command_list()
+        self.cmd_idx = 0
+        self.command_len = len(self.commands)
+
+    def generate_command_list(self):
+        # Kinda am hardcoding the prompting here, totally not cool
+        self.commands.append(f"turn off wifi")
+        self.commands.append(f'Open the application named {self.app_name}')
+        for page in self.pages:
+            self.commands.append(f"Visit page {page}")
+
+        self.commands.append("Swipe out of Application")
+        self.commands.append("Enable Wifi")
+        self.commands.append(f'Open the application named {self.app_name}')
+        for page in self.pages:
+            self.commands.append(f"Visit page {page}")
+
+    def run(self, command: str, save_last_cmd=True) -> AgentOutput:
+        self.last_command = command
+        if self.cmd_idx >= self.command_len:
+            return AgentOutput(success=False, agent_id=self.agent_id, output='BREAK')
+
+        cmd = self.commands[self.cmd_idx]
+        self.cmd_idx += 1
+        self.last_output = cmd
+        return AgentOutput(success=True, agent_id=self.agent_id, output=cmd)
+
+    def fetch_cmd(self, cmd: str) -> str:
+        if cmd == "get-last-command":
+            return self.last_command
+        elif cmd == "erase-history":
+            return ""
+        elif cmd == "get-last-output":
+            return self.last_output
+        else:
+            return ""

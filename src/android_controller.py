@@ -8,14 +8,13 @@ import re
 import pydantic
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 
-## We use Pydantic to enforce the format of the object.
-## Python Errors then allow us to create a basic Chain-of-Thought
-## Feedback process which should eventually give us the right type
-## Credit for the idea belongs to High Dimensional Research/nolita.ai
+# We use Pydantic to enforce the format of the object.
+# Python Errors then allow us to create a basic Chain-of-Thought
+# Feedback process which should eventually give us the right type
+
 class ControllerCommand(pydantic.BaseModel):
     command_name: str
     command_inputs: List[int]
@@ -159,4 +158,5 @@ class AndroidController:
             return self.enable_wifi()
         elif command_mod.command_name == "disable-wifi":
             return self.disable_wifi()
-        return False, "Accepted Commands are get-screen, tap, swipe, shutdown, enable-wifi, disable-wifi. Please only select from these"
+        return False, ("Accepted Commands are get-screen, tap, swipe, shutdown, enable-wifi, disable-wifi. Please only "
+                       "select from these")

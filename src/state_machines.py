@@ -1,4 +1,4 @@
-from src.agents import AndroidAgent, ClaudeAgent, AgentOutput
+from src.agents import AndroidAgent, ClaudeAgent, AgentOutput, ManualAgent
 from src.android_controller import AndroidController
 
 
@@ -18,6 +18,10 @@ class AgentStateMachine:
                 self.agents[name] = AndroidAgent(name, definition['prompt-formatter'],
                                                  definition['call-before-execute'], definition['pass-success-to'],
                                                  definition['pass-fail-to'], android=android)
+            elif definition['type'] == 'manual-node':
+                self.agents[name] = ManualAgent(name, definition['prompt-formatter'],
+                                                definition['call-before-execute'], definition['pass-success-to'],
+                                                definition['pass-fail-to'], filepath=definition['config-filepath'])
 
     def run_state_machine(self, max_turns: int, start_node: str, task_definition: str):
         current_node = self.agents[start_node]
@@ -28,7 +32,7 @@ class AgentStateMachine:
                             current_node.call_before_execute]
 
             prompt = current_node.format_prompt(task_definition, previous_output, fetched_data)
-            output: AgentOutput = current_node.run(prompt)
+            output: AgentOutput = current_node.run()
             print(f"{current_node.agent_id} -> {output.success}: {output.output}")
             previous_output = output.output
             if output.success:
