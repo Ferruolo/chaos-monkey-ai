@@ -37,6 +37,7 @@ enable-wifi
 disable-wifi
 get-screen
 do-nothing
+close-app
 
 Remember that each command must contain both the command_name and command_inputs columns, otherwise the output will be 
 invalid. For commands that don't need command_inputs, consider just passing [0, 0]
@@ -77,9 +78,9 @@ agent_definitions = {
     'MasterNode': {
         'type': "manual-node",
         'system-prompt': master_node_system_prompt,
-        'prompt-formatter': lambda x: lambda y: lambda z: f"Task: {x} | Current Screen: {z[0]}",
+        'prompt-formatter': lambda x: lambda y: lambda z: f"{z[0]}",
         'call-before-execute': [
-            # CallCommand(agent_name="AndroidNode", agent_command="get-screen"),
+            CallCommand(agent_name="AndroidNode", agent_command="get-screen"),
             CallCommand(agent_name="CommandParser", agent_command="erase-history"),
         ],
         'pass-success-to': 'CommandParser',

@@ -41,4 +41,9 @@ class AgentStateMachine:
                 current_node = self.agents[current_node.pass_failure_to]
 
             if current_node == "BREAK":
+                print("BREAKING")
                 break
+        print("Loop Broken")
+        summary = self.agents['MasterNode'].summarize()
+        return summary
+

@@ -22,7 +22,7 @@ class ControllerCommand(pydantic.BaseModel):
 
 def parse_json(x):
     json_pattern = re.compile(
-        '\{\s*"command_name"\s*:\s*"(tap|swipe|shutdown|enable-wifi|disable-wifi|get-screen|do-nothing)"\s*,\s*"command_inputs"\s*:\s*\[((?:\d+(?:\s*,\s*\d+){1,5})?)\]\s*\}')
+        '\{\s*"command_name"\s*:\s*"(tap|swipe|shutdown|enable-wifi|disable-wifi|get-screen|close-app|do-nothing)"\s*,\s*"command_inputs"\s*:\s*\[((?:\d+(?:\s*,\s*\d+){1,5})?)\]\s*\}')
     json_match = json_pattern.search(x)
     if json_match:
         json_command = json_match.group(0)
@@ -96,6 +96,15 @@ class AndroidController:
 
         return True, "Wifi Turned back On."
 
+    def close_application(self):
+        # Todo: make this more flexible with the AI. RN I just need to ship a demo :(
+        close_cmd = f"{self.adb_path} shell am force-stop com.example.my_sample_application"
+        result = subprocess.run(close_cmd, shell=True, capture_output=True)
+
+        if result.returncode != 0:
+            raise Exception("Did not close app")
+        return True, ""
+
     def shutdown(self):
         time.sleep(5)
         print("Shutting Down!")
@@ -160,6 +169,8 @@ class AndroidController:
             return self.enable_wifi()
         elif command_mod.command_name == "disable-wifi":
             return self.disable_wifi()
+        elif command_mod.command_name == "close-app":
+            return self.close_application()
         elif command_mod.command_name == "do-nothing":
             return True, "Did Nothing!"
         return False, ("Accepted Commands are get-screen, tap, swipe, shutdown, enable-wifi, disable-wifi. Please only "

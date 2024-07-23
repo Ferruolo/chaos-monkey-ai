@@ -125,7 +125,7 @@ class AndroidAgent(Agent):
 # Claude puts the Artificial in Artificial
 # Intelligence
 class ManualAgent(Agent):
-    def __init__(self, *args, filepath):
+    def __init__(self, *args, filepath, model_name="claude-3-sonnet-20240229"):
         super().__init__(*args)
         self.commands = list()
         self.filepath = filepath
@@ -139,6 +139,9 @@ class ManualAgent(Agent):
         self.generate_command_list()
         self.cmd_idx = 0
         self.command_len = len(self.commands)
+        self.notes = list()
+        self.claude = AnthropicInterface(model_name=model_name)
+        self.system_prompt = "Take simple notes on what you see on the following android screen output and the given description for it"
 
     def generate_command_list(self):
         # Kinda am hardcoding the prompting here, totally not cool
@@ -147,13 +150,17 @@ class ManualAgent(Agent):
         for page in self.pages:
             self.commands.append(f"Visit page {page}")
 
-        self.commands.append("Swipe out of Application")
+        self.commands.append("Close Out of Application")
         self.commands.append("Enable Wifi")
         self.commands.append(f'Open the application named {self.app_name}')
         for page in self.pages:
             self.commands.append(f"Visit page {page}")
 
     def run(self, command: str, save_last_cmd=True) -> AgentOutput:
+        # Take notes on current screen for later (too many tokens to only do XML)
+        notes_prompt = f"{self.system_prompt}\n{anthropic.HUMAN_PROMPT}Description: {self.last_output}\n Screen: {command}\n{anthropic.AI_PROMPT}"
+        self.notes.append(self.claude.call_api(notes_prompt))
+
         self.last_command = command
         if self.cmd_idx >= self.command_len:
             return AgentOutput(success=False, agent_id=self.agent_id, output='BREAK')
@@ -172,3 +179,10 @@ class ManualAgent(Agent):
             return self.last_output
         else:
             return ""
+
+    def summarize(self):
+        notes = '\n----\n'.join(self.notes)
+        prompt = (f"Summarize and write a report on the following notes from testing an android app with/without wifi"
+                  f" {anthropic.HUMAN_PROMPT} {notes}{anthropic.AI_PROMPT}")
+        print(prompt)
+        return self.claude.call_api(prompt)
