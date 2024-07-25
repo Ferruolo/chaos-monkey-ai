@@ -35,14 +35,16 @@ class AgentStateMachine:
             output: AgentOutput = current_node.run(prompt)
             print(f"{current_node.agent_id} -> {output.success}: {output.output}")
             previous_output = output.output
+            if previous_output == "BREAK":
+                print("BREAKING")
+                break
+
             if output.success:
                 current_node = self.agents[current_node.pass_success_to]
             else:
                 current_node = self.agents[current_node.pass_failure_to]
 
-            if current_node == "BREAK":
-                print("BREAKING")
-                break
+
         print("Loop Broken")
         summary = self.agents['MasterNode'].summarize()
         return summary

@@ -22,7 +22,7 @@ and the verifier node (which ensures that the task that was
 supposed to get completed gets completed). There are also the
 two manual nodes, the Android Node (which houses the android controller),
 and the master node (which tells everything what to do).
-You can see the way that these two nodes interact within 
+You can see the way that these nodes interact within 
 src/behavior_definition.py.
 
 ## Next steps:

@@ -128,5 +128,6 @@ agent_definitions = {
         'call-before-execute': [],
         'pass-success-to': 'VerifierNode',
         'pass-fail-to': 'CommandParser'  # If we haven't reached
-    }
+    },
+
 }

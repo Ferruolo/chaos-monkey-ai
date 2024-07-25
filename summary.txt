@@ -1,0 +1,30 @@
+Based on the provided Android screen output and descriptions, here is a report summarizing the key points:
+
+Testing Android App with/without WiFi
+
+This report covers the testing of an Android app named "my-sample-application" under different WiFi scenarios. The app consists of three main screens/fragments: Home, Dashboard, and Notifications, accessible via a bottom navigation bar.
+
+1. Home Screen:
+   - The Home screen displays the text "This is home Fragment" in the main content area.
+   - The bottom navigation bar has three options: Home (selected), Dashboard, and Notifications.
+
+2. Dashboard Screen:
+   - When WiFi is enabled, the Dashboard screen shows the text "WIFI Works".
+   - The bottom navigation bar has Home, Dashboard (selected), and Notifications options.
+
+3. Notifications Screen:
+   - The Notifications screen displays the text "This is notifications Fragment" in the main content area.
+   - The bottom navigation bar has Home, Dashboard, and Notifications (selected) options.
+
+4. WiFi Disabled:
+   - When WiFi is disabled, the app displays an error message on the Dashboard screen: "Error: Unable to resolve host 'chaos-monkey-ai.vercel.app': No address associated with hostname".
+
+5. App Navigation:
+   - The app follows a consistent structure with a FrameLayout as the root view, containing an action bar, the main content area, and a bottom navigation bar.
+   - The bottom navigation bar allows seamless navigation between the Home, Dashboard, and Notifications screens.
+
+6. Device Home Screen:
+   - The testing also involved navigating to the Google Pixel Launcher (Nexus Launcher) home screen.
+   - The home screen displayed the "At a Glance" widget, app icons (e.g., Play Store, Gmail, Photos, YouTube), a Google search bar, and the app icon for "my-sample-application" in the favorites/hotseat tray.
+
+In summary, the testing covered the functionality of the "my-sample-application" app under different WiFi conditions, as well as navigating between its main screens and the device home screen. The app displayed the expected behavior, with the Dashboard screen showing an error message when WiFi was disabled, and the other screens functioning as intended.
